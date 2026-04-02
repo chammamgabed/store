@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>My Store</title>
+
+<style>
+body {font-family: Arial; text-align:center;}
+
+#search {padding:10px;width:80%;margin:10px;border-radius:8px;}
+
+.product {margin:20px; padding:10px; border:1px solid #ddd; border-radius:10px;}
+
+img {width:150px; border-radius:10px;}
+
+a, button {
+    display:inline-block;
+    margin-top:10px;
+    background:red;
+    color:white;
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    text-decoration:none;
+}
+
+.delete-btn {background:black;}
+</style>
+</head>
+
+<body>
+
+<h2>🛒 My Store</h2>
+
+<div id="adminPanel" style="display:none;">
+    <h3>Admin Panel</h3>
+
+    <input type="file" id="imgInput"><br><br>
+    <input type="text" id="nameInput" placeholder="اسم المنتج"><br><br>
+    <input type="text" id="linkInput" placeholder="رابط المنتج"><br><br>
+
+    <button onclick="addProduct()">إضافة منتج</button>
+</div>
+
+<!-- البحث -->
+<input type="text" id="search" placeholder="🔍 Chercher..." onkeyup="searchProduct()">
+
+<div id="products"></div>
+
+<script>
+var db;
+
+var request = indexedDB.open("storeDB", 1);
+
+request.onupgradeneeded = function(e) {
+    db = e.target.result;
+    db.createObjectStore("products", {keyPath:"id", autoIncrement:true});
+};
+
+request.onsuccess = function(e) {
+    db = e.target.result;
+    loadProducts();
+};
+
+function addProduct() {
+    var file = document.getElementById("imgInput").files[0];
+    var name = document.getElementById("nameInput").value;
+    var link = document.getElementById("linkInput").value;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var tx = db.transaction("products", "readwrite");
+        var store = tx.objectStore("products");
+
+        store.add({
+            name:name,
+            link:link,
+            img:e.target.result
+        });
+
+        loadProducts();
+    };
+    reader.readAsDataURL(file);
+}
+
+function loadProducts() {
+    document.getElementById("products").innerHTML = "";
+
+    var tx = db.transaction("products", "readonly");
+    var store = tx.objectStore("products");
+
+    store.openCursor().onsuccess = function(e) {
+        var cursor = e.target.result;
+        if(cursor) {
+            var p = cursor.value;
+
+            var div = document.createElement("div");
+            div.className="product";
+
+            div.innerHTML = `
+                <h3>${p.name}</h3>
+                <img src="${p.img}"><br>
+                <a href="${p.link}" target="_blank">Buy Now</a>
+                ${isAdmin ? `<br><button class="delete-btn" onclick="deleteProduct(${cursor.key})">Delete</button>` : ""}
+            `;
+
+            document.getElementById("products").appendChild(div);
+
+            cursor.continue();
+        }
+    };
+}
+
+function deleteProduct(id){
+    var tx = db.transaction("products","readwrite");
+    var store = tx.objectStore("products");
+    store.delete(id);
+    loadProducts();
+}
+
+function searchProduct(){
+    var input = document.getElementById("search").value.toLowerCase();
+    var products = document.getElementsByClassName("product");
+
+    for (var i=0;i<products.length;i++){
+        var name = products[i].innerText.toLowerCase();
+        products[i].style.display = name.includes(input) ? "block":"none";
+    }
+}
+
+/* تحديد الصفحة */
+var urlParams = new URLSearchParams(window.location.search);
+var page = urlParams.get("page");
+
+var isAdmin = false;
+
+if(page === "admin"){
+    document.getElementById("adminPanel").style.display="block";
+    isAdmin = true;
+}
+</script>
+
+</body>
+</html>من
