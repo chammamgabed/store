@@ -5,13 +5,10 @@
   <title>My Store</title>
   <style>
     body {font-family: Arial; text-align: center; background:#f5f5f5;}
-    .header {background:#222; color:white; padding:15px; display:flex; justify-content:space-between;}
-    .cart {cursor:pointer; font-size:24px;}
+    .header {background:#222; color:white; padding:15px;}
     .products {display:flex; flex-wrap:wrap; justify-content:center;}
     .product {background:white; margin:10px; padding:10px; border-radius:10px; width:200px;}
     .product img {width:100%;}
-    button {padding:10px; background:green; color:white; border:none;}
-    input {padding:10px; margin:5px;}
   </style>
 </head>
 
@@ -19,7 +16,6 @@
 
 <div class="header">
   <h2>🛍️ My Store</h2>
-  <div class="cart">🛒</div>
 </div>
 
 <div id="app"></div>
@@ -47,26 +43,26 @@ document.addEventListener("DOMContentLoaded", function(){
   // ADMIN
   if(page === "admin"){
     document.getElementById("app").innerHTML = `
-      <h2>🔐 Admin</h2>
+      <h2>🔐 Admin Panel</h2>
       <p>تم الدخول بنجاح ✅</p>
     `;
   }
 
-  // زر مخفي
+  // 🔥 الضغط في أي مكان 5 مرات
   let count = 0;
-  const cart = document.querySelector(".cart");
 
-  cart.addEventListener("click", function(){
+  document.body.addEventListener("click", function(){
     count++;
-    console.log("click:", count); // للتأكد
+    console.log("click:", count);
 
     if(count >= 5){
       window.location.href = "?page=admin";
     }
 
+    // يرجع للصفر بعد 2 ثواني
     setTimeout(()=>{
       count = 0;
-    }, 3000);
+    }, 2000);
   });
 
 });
