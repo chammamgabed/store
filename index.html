@@ -4,56 +4,14 @@
   <meta charset="UTF-8">
   <title>My Store</title>
   <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      background: #f5f5f5;
-    }
-
-    .header {
-      background: #222;
-      color: white;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .cart {
-      cursor: pointer;
-      font-size: 24px;
-    }
-
-    .products {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .product {
-      background: white;
-      margin: 10px;
-      padding: 10px;
-      border-radius: 10px;
-      width: 200px;
-    }
-
-    .product img {
-      width: 100%;
-    }
-
-    button {
-      padding: 10px;
-      background: green;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    input {
-      padding: 10px;
-      margin: 5px;
-      width: 200px;
-    }
+    body {font-family: Arial; text-align: center; background:#f5f5f5;}
+    .header {background:#222; color:white; padding:15px; display:flex; justify-content:space-between;}
+    .cart {cursor:pointer; font-size:24px;}
+    .products {display:flex; flex-wrap:wrap; justify-content:center;}
+    .product {background:white; margin:10px; padding:10px; border-radius:10px; width:200px;}
+    .product img {width:100%;}
+    button {padding:10px; background:green; color:white; border:none;}
+    input {padding:10px; margin:5px;}
   </style>
 </head>
 
@@ -67,84 +25,51 @@
 <div id="app"></div>
 
 <script>
-// معرفة الصفحة
-const params = new URLSearchParams(window.location.search);
-const page = params.get("page");
+document.addEventListener("DOMContentLoaded", function(){
 
-// STORE PAGE
-if(page !== "admin"){
-  document.getElementById("app").innerHTML = `
-    <h2>منتجاتنا</h2>
-    <div class="products">
-      <div class="product">
-        <img src="https://via.placeholder.com/200">
-        <h3>ساعة ذكية</h3>
-        <p>السعر: 15$</p>
-        <a href="https://s.click.aliexpress.com/e/_Ev2rVle" target="_blank">
-          <button>شراء</button>
-        </a>
+  const params = new URLSearchParams(window.location.search);
+  const page = params.get("page");
+
+  // STORE
+  if(page !== "admin"){
+    document.getElementById("app").innerHTML = `
+      <h2>منتجاتنا</h2>
+      <div class="products">
+        <div class="product">
+          <img src="https://via.placeholder.com/200">
+          <h3>ساعة ذكية</h3>
+          <p>15$</p>
+        </div>
       </div>
-
-      <div class="product">
-        <img src="https://via.placeholder.com/200">
-        <h3>سماعات</h3>
-        <p>السعر: 10$</p>
-        <a href="https://s.click.aliexpress.com/e/_Ev2rVle" target="_blank">
-          <button>شراء</button>
-        </a>
-      </div>
-    </div>
-  `;
-}
-
-// ADMIN PAGE
-if(page === "admin"){
-  document.getElementById("app").innerHTML = `
-    <h2>🔐 Admin Panel</h2>
-
-    <input id="name" placeholder="اسم المنتج"><br>
-    <input id="price" placeholder="السعر"><br>
-    <input id="image" placeholder="رابط الصورة"><br>
-    <input id="link" placeholder="رابط الشراء"><br>
-
-    <button onclick="addProduct()">➕ إضافة</button>
-
-    <div id="list"></div>
-  `;
-}
-
-// زر مخفي (5 ضغطات على السلة)
-let count = 0;
-document.querySelector(".cart").addEventListener("click", () => {
-  count++;
-
-  if(count === 5){
-    window.location.href = "?page=admin";
+    `;
   }
 
-  setTimeout(() => {
-    count = 0;
-  }, 3000);
+  // ADMIN
+  if(page === "admin"){
+    document.getElementById("app").innerHTML = `
+      <h2>🔐 Admin</h2>
+      <p>تم الدخول بنجاح ✅</p>
+    `;
+  }
+
+  // زر مخفي
+  let count = 0;
+  const cart = document.querySelector(".cart");
+
+  cart.addEventListener("click", function(){
+    count++;
+    console.log("click:", count); // للتأكد
+
+    if(count >= 5){
+      window.location.href = "?page=admin";
+    }
+
+    setTimeout(()=>{
+      count = 0;
+    }, 3000);
+  });
+
 });
-
-// إضافة منتج (عرض فقط)
-function addProduct(){
-  const name = document.getElementById("name").value;
-  const price = document.getElementById("price").value;
-  const image = document.getElementById("image").value;
-  const link = document.getElementById("link").value;
-
-  document.getElementById("list").innerHTML += `
-    <div class="product">
-      <img src="${image}">
-      <h3>${name}</h3>
-      <p>${price}</p>
-      <a href="${link}" target="_blank">
-        <button>شراء</button>
-      </a>
-    </div>
-  `;
-}
 </script>
 
 </body>
