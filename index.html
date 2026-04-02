@@ -8,66 +8,78 @@
 body {
     font-family: Arial;
     text-align: center;
+    background: #f5f5f5;
 }
 
+h2 {
+    margin-top: 20px;
+}
+
+/* البحث */
 #search {
-    padding: 10px;
-    width: 80%;
+    padding: 12px;
+    width: 85%;
+    border-radius: 10px;
+    border: 2px solid #ccc;
     margin: 10px;
-    border-radius: 8px;
 }
 
+/* زر Seller */
+button {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: none;
+    background: black;
+    color: white;
+    margin: 5px;
+}
+
+/* المنتج */
 .product {
-    margin: 20px;
+    background: white;
+    margin: 20px auto;
+    padding: 15px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 300px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-img {
-    width: 150px;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-.no-img {
-    width: 150px;
-    height: 150px;
-    background: #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* الصورة */
+.product img {
+    width: 100%;
     border-radius: 10px;
 }
 
-a {
+/* زر الشراء */
+.buy-btn {
     display: inline-block;
     margin-top: 10px;
     background: red;
     color: white;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 8px;
-}
-
-#adminPanel {
-    display: none;
-    margin-top: 20px;
-}
-
-#loginBox {
-    display: none;
-    background: #eee;
-    padding: 20px;
+    padding: 12px 20px;
     border-radius: 10px;
-    width: 250px;
-    margin: 20px auto;
+    text-decoration: none;
+    font-weight: bold;
 }
 
-button {
+/* admin */
+#adminPanel, #loginBox {
+    display: none;
+    background: white;
+    padding: 15px;
+    margin: 20px auto;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 300px;
+}
+
+input {
     padding: 10px;
+    width: 90%;
+    margin: 5px;
     border-radius: 8px;
-    border: none;
-    background: black;
-    color: white;
-    cursor: pointer;
+    border: 1px solid #ccc;
 }
 </style>
 </head>
@@ -78,48 +90,36 @@ button {
 
 <input type="text" id="search" placeholder="🔍 Search..." onkeyup="searchProduct()">
 
-<br><br>
-
+<br>
 <button onclick="secretClick()">🛍️ Seller Zone</button>
 
 <!-- Login -->
 <div id="loginBox">
-    <h3>Seller Login</h3>
-    <input type="password" id="passwordInput" placeholder="Enter password"><br><br>
+    <h3>Login</h3>
+    <input type="password" id="passwordInput" placeholder="Password">
     <button onclick="checkPassword()">Login</button>
-    <br><br>
-    <button onclick="closeLogin()">❌ Close</button>
 </div>
 
-<!-- Admin Panel -->
+<!-- Admin -->
 <div id="adminPanel">
-
-<br>
-<input type="text" id="imgInput" placeholder="Image URL"><br><br>
-<input type="text" id="nameInput" placeholder="Product Name"><br><br>
-<input type="text" id="linkInput" placeholder="Product Link"><br><br>
-
-<button onclick="addProduct()">Add Product</button>
-
-<br><br>
-<button onclick="closeAdmin()">❌ Close</button>
-
+    <input type="text" id="imgInput" placeholder="Image URL">
+    <input type="text" id="nameInput" placeholder="Product Name">
+    <input type="text" id="linkInput" placeholder="Product Link">
+    <button onclick="addProduct()">Add Product</button>
+    <button onclick="closeAdmin()">Close</button>
 </div>
 
 <div id="products"></div>
 
 <script>
-const PASSWORD = "xxcb-12/+";
+const PASSWORD = "xxcb-12";
 let products = JSON.parse(localStorage.getItem("products")) || [];
 let isAdmin = false;
 let clickCount = 0;
 
-/* ===== عرض ===== */
-window.onload = function() {
-    displayProducts();
-};
+window.onload = displayProducts;
 
-/* ===== زر سري ===== */
+/* زر سري */
 function secretClick() {
     clickCount++;
     if (clickCount === 10) {
@@ -128,138 +128,69 @@ function secretClick() {
     }
 }
 
-/* ===== تسجيل دخول ===== */
+/* تسجيل دخول */
 function checkPassword() {
-    let input = document.getElementById("passwordInput").value;
-
-    if (input === PASSWORD) {
+    let pass = document.getElementById("passwordInput").value;
+    if (pass === PASSWORD) {
+        isAdmin = true;
         document.getElementById("loginBox").style.display = "none";
         document.getElementById("adminPanel").style.display = "block";
-        isAdmin = true;
     } else {
-        alert("Wrong password!");
+        alert("Wrong password");
     }
 }
 
-function closeLogin() {
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("passwordInput").value = "";
-    clickCount = 0;
-}
-
+/* غلق */
 function closeAdmin() {
     document.getElementById("adminPanel").style.display = "none";
     isAdmin = false;
 }
 
-/* ===== حفظ ===== */
+/* حفظ */
 function saveProducts() {
     localStorage.setItem("products", JSON.stringify(products));
 }
 
-/* ===== كلمات مترجمة ===== */
-function generateKeywords(text) {
-    text = text.toLowerCase();
-
-    let words = text.split(" ");
-    let keywords = [...words];
-
-    let dictionary = {
-        charger: ["chargeur", "شاحن"],
-        phone: ["telephone", "هاتف"],
-        cable: ["cable", "كابل"],
-        fast: ["rapide", "سريع"],
-        adapter: ["adaptateur", "محول"]
-    };
-
-    words.forEach(word => {
-        if (dictionary[word]) {
-            keywords = keywords.concat(dictionary[word]);
-        }
-    });
-
-    return keywords.join(" ");
-}
-
-/* ===== إضافة ===== */
+/* إضافة */
 function addProduct() {
     let img = document.getElementById("imgInput").value;
-    let link = document.getElementById("linkInput").value;
     let name = document.getElementById("nameInput").value;
+    let link = document.getElementById("linkInput").value;
 
-    if (!img || !link || !name) {
-        alert("Please fill all fields");
+    if (!img || !name || !link) {
+        alert("Fill all fields");
         return;
     }
 
-    products.push({
-        name: name,
-        link: link,
-        img: img,
-        keywords: generateKeywords(name)
-    });
-
+    products.push({img, name, link});
     saveProducts();
     displayProducts();
-
-    document.getElementById("imgInput").value = "";
-    document.getElementById("nameInput").value = "";
-    document.getElementById("linkInput").value = "";
 }
 
-/* ===== عرض ===== */
+/* عرض */
 function displayProducts() {
     let container = document.getElementById("products");
     container.innerHTML = "";
 
-    products.forEach((product, index) => {
-        let div = document.createElement("div");
-        div.className = "product";
-
-        let imageHTML = product.img
-            ? `<img src="${product.img}" onclick="deleteImage(${index})">`
-            : `<div class="no-img">No Image</div>`;
-
-        div.innerHTML = `
-            <h3>${product.name}</h3>
-            ${imageHTML}
-            <br>
-            <a href="${product.link}" target="_blank">Buy Now</a>
+    products.forEach(p => {
+        container.innerHTML += `
+        <div class="product">
+            <h3>${p.name}</h3>
+            <img src="${p.img}">
+            <a href="${p.link}" target="_blank" class="buy-btn">Buy Now</a>
+        </div>
         `;
-
-        container.appendChild(div);
     });
 }
 
-/* ===== حذف صورة ===== */
-function deleteImage(index) {
-    if (!isAdmin) return;
-
-    if (confirm("Delete image?")) {
-        products[index].img = "";
-        saveProducts();
-        displayProducts();
-    }
-}
-
-/* ===== بحث ===== */
-function normalize(text) {
-    return text.toLowerCase();
-}
-
+/* بحث */
 function searchProduct() {
-    let input = normalize(document.getElementById("search").value);
+    let input = document.getElementById("search").value.toLowerCase();
     let items = document.getElementsByClassName("product");
 
     for (let i = 0; i < items.length; i++) {
-        let name = normalize(products[i].name);
-        let keywords = normalize(products[i].keywords || "");
-
-        if (name.includes(input) || keywords.includes(input)) {
-            items[i].style.display = "block";
-        } else {
-            items[i].style.display = "none";
-        }
+        let text = items[i].innerText.toLowerCase();
+        items[i].style.display = text.includes(input) ? "block" : "none";
     }
 }
 </script>
