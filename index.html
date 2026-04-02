@@ -5,41 +5,22 @@
 <title>My Store</title>
 
 <style>
-body {
-    font-family: Arial;
-    text-align: center;
-}
+body {font-family: Arial; text-align:center;}
 
-/* البحث */
-#search {
-    padding: 10px;
-    width: 80%;
-    margin: 10px;
-    border-radius: 8px;
-}
+#search {padding:10px;width:80%;margin:10px;border-radius:8px;}
 
-/* المنتج */
-.product {
-    margin: 20px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-}
+.product {margin:20px; padding:10px; border:1px solid #ddd; border-radius:10px;}
 
-img {
-    width: 200px;
-    border-radius: 10px;
-}
+img {width:200px; border-radius:10px;}
 
 a {
-    display: inline-block;
-    margin-top: 10px;
-    background: red;
-    color: white;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 8px;
-    font-size: 16px;
+    display:inline-block;
+    margin-top:10px;
+    background:red;
+    color:white;
+    padding:10px 20px;
+    text-decoration:none;
+    border-radius:8px;
 }
 </style>
 </head>
@@ -48,29 +29,25 @@ a {
 
 <h2>🛒 My Store</h2>
 
-<!-- البحث -->
 <input type="text" id="search" placeholder="🔍 Chercher..." onkeyup="searchProduct()">
 
-<!-- المنتجات -->
 <div id="products"></div>
 
 <script>
 
-/* المنتجات */
 var products = [
 {
-name:"GaN 120W Fast Charger",
-img:"https://ae01.alicdn.com/kf/Sb3c1c0e6f4c04a1d8bcb0d.jpg",
+name:"Fast Charger 120W",
+img:"https://i.imgur.com/8Km9tLL.jpg",
 link:"https://s.click.aliexpress.com/e/_EvLztJ6"
 },
 {
-name:"Wireless Earbuds Bluetooth",
-img:"https://ae01.alicdn.com/kf/S2f4c1d8e3c5b4e7a9f2.jpg",
+name:"Wireless Earbuds",
+img:"https://i.imgur.com/2nCt3Sbl.jpg",
 link:"https://s.click.aliexpress.com/e/_EvLztJ6"
 }
 ];
 
-/* عرض المنتجات */
 function loadProducts(){
     var container = document.getElementById("products");
     container.innerHTML = "";
@@ -87,18 +64,16 @@ function loadProducts(){
     });
 }
 
-/* البحث */
 function searchProduct(){
     var input = document.getElementById("search").value.toLowerCase();
     var productsDiv = document.getElementsByClassName("product");
 
-    for (var i=0; i<productsDiv.length; i++){
+    for (var i=0;i<productsDiv.length;i++){
         var name = productsDiv[i].innerText.toLowerCase();
         productsDiv[i].style.display = name.includes(input) ? "block":"none";
     }
 }
 
-/* تشغيل */
 loadProducts();
 
 </script>
