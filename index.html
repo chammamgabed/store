@@ -15,7 +15,6 @@ h2 {
     margin-top: 20px;
 }
 
-/* البحث */
 #search {
     padding: 12px;
     width: 85%;
@@ -24,7 +23,6 @@ h2 {
     margin: 10px;
 }
 
-/* زر Seller */
 button {
     padding: 10px 15px;
     border-radius: 10px;
@@ -35,7 +33,6 @@ button {
     cursor: pointer;
 }
 
-/* المنتج */
 .product {
     background: white;
     margin: 20px auto;
@@ -46,13 +43,12 @@ button {
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* الصورة */
 .product img {
     width: 100%;
     border-radius: 10px;
+    cursor: pointer;
 }
 
-/* زر الشراء */
 .buy-btn {
     display: inline-block;
     margin-top: 10px;
@@ -64,7 +60,6 @@ button {
     font-weight: bold;
 }
 
-/* admin */
 #adminPanel, #loginBox {
     display: none;
     background: white;
@@ -180,15 +175,26 @@ function displayProducts() {
     let container = document.getElementById("products");
     container.innerHTML = "";
 
-    products.forEach(p => {
+    products.forEach((p, index) => {
         container.innerHTML += `
         <div class="product">
             <h3>${p.name}</h3>
-            <img src="${p.img}" onerror="this.style.display='none'">
+            <img src="${p.img}" onclick="deleteImage(${index})" onerror="this.style.display='none'">
             <a href="${p.link}" target="_blank" class="buy-btn">Buy Now</a>
         </div>
         `;
     });
+}
+
+/* حذف صورة */
+function deleteImage(index) {
+    if (!isAdmin) return;
+
+    if (confirm("Delete this image?")) {
+        products[index].img = "";
+        saveProducts();
+        displayProducts();
+    }
 }
 
 /* بحث */
