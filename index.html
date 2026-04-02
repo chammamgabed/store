@@ -1,131 +1,164 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>My Store</title>
 
 <style>
-body {font-family: Arial; text-align:center; background:#f5f5f5;}
-.header {background:#222; color:white; padding:15px;}
-.products {display:flex; flex-wrap:wrap; justify-content:center;}
-.product {background:white; margin:10px; padding:10px; border-radius:10px; width:200px;}
-.product img {width:100%;}
-input {padding:10px; margin:5px; width:200px;}
-button {padding:10px; background:green; color:white; border:none; cursor:pointer;}
+body {
+    font-family: Arial;
+    text-align: center;
+}
+
+/* البحث */
+#search {
+    padding: 10px;
+    width: 80%;
+    margin: 10px;
+    border-radius: 8px;
+}
+
+/* المنتجات */
+.product {
+    margin: 20px;
+}
+
+img {
+    width: 150px;
+    border-radius: 10px;
+}
+
+a {
+    display: inline-block;
+    margin-top: 10px;
+    background: red;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+/* admin مخفي */
+#adminPanel {
+    display: none;
+}
 </style>
 </head>
 
 <body>
 
-<div class="header">
-<h2>🛍️ My Store</h2>
+<h2>🛒 My Store</h2>
+
+<!-- البحث -->
+<input type="text" id="search" placeholder="🔍 Chercher..." onkeyup="searchProduct()">
+
+<!-- ADMIN (مخفي) -->
+<div id="adminPanel">
+    <h3>🔐 Admin</h3>
+
+    <input type="file" id="imgInput" accept="image/*"><br><br>
+    <input type="text" id="nameInput" placeholder="اسم المنتج"><br><br>
+    <input type="text" id="linkInput" placeholder="رابط المنتج"><br><br>
+
+    <button onclick="addProduct()">إضافة منتج</button>
+    <br><br>
 </div>
 
-<div id="app"></div>
+<!-- المنتجات -->
+<div id="products"></div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function(){
-
-const params = new URLSearchParams(window.location.search);
-const page = params.get("page");
 
 // تحميل المنتجات
 let products = JSON.parse(localStorage.getItem("products")) || [];
 
-// عرض المتجر
-function showStore(){
-  let html = "<h2>منتجاتنا</h2><div class='products'>";
+// عرض المنتجات
+function showProducts(){
+    document.getElementById("products").innerHTML = "";
 
-  if(products.length === 0){
-    html += "<p>لا توجد منتجات بعد ❌</p>";
-  }
+    products.forEach(p => {
+        var div = document.createElement("div");
+        div.className = "product";
 
-  products.forEach(p => {
-    html += `
-      <div class="product">
-        <img src="${p.image}">
-        <h3>${p.name}</h3>
-        <p>${p.price}</p>
-        <a href="${p.link}" target="_blank">
-          <button>شراء</button>
-        </a>
-      </div>
-    `;
-  });
+        div.innerHTML = `
+            <h3>${p.name}</h3>
+            <img src="${p.image}">
+            <br>
+            <a href="${p.link}" target="_blank">Buy Now</a>
+        `;
 
-  html += "</div>";
-  document.getElementById("app").innerHTML = html;
-}
-
-// عرض الادمن
-function showAdmin(){
-  document.getElementById("app").innerHTML = `
-    <h2>🔐 Admin Panel</h2>
-
-    <input id="name" placeholder="اسم المنتج"><br>
-    <input id="price" placeholder="السعر"><br>
-    <input id="image" placeholder="رابط الصورة"><br>
-    <input id="link" placeholder="رابط الشراء"><br>
-
-    <button onclick="addProduct()">➕ إضافة منتج</button>
-    <br><br>
-    <button onclick="goStore()">⬅️ الرجوع للمتجر</button>
-  `;
+        document.getElementById("products").appendChild(div);
+    });
 }
 
 // إضافة منتج
-window.addProduct = function(){
-  const name = document.getElementById("name").value;
-  const price = document.getElementById("price").value;
-  const image = document.getElementById("image").value;
-  const link = document.getElementById("link").value;
+function addProduct() {
+    var file = document.getElementById("imgInput").files[0];
+    var link = document.getElementById("linkInput").value;
+    var name = document.getElementById("nameInput").value;
 
-  if(!name || !price || !image || !link){
-    alert("اكمل جميع الخانات ❗");
-    return;
-  }
+    if (!file || !link || !name) {
+        alert("أكمل جميع المعلومات");
+        return;
+    }
 
-  const product = {name, price, image, link};
-  products.push(product);
+    var reader = new FileReader();
 
-  localStorage.setItem("products", JSON.stringify(products));
+    reader.onload = function(e) {
 
-  alert("تمت الإضافة ✅");
+        var product = {
+            name: name,
+            link: link,
+            image: e.target.result
+        };
 
-  document.getElementById("name").value = "";
-  document.getElementById("price").value = "";
-  document.getElementById("image").value = "";
-  document.getElementById("link").value = "";
+        products.push(product);
+
+        localStorage.setItem("products", JSON.stringify(products));
+
+        showProducts();
+
+        alert("تمت الإضافة ✅");
+    };
+
+    reader.readAsDataURL(file);
 }
 
-// الرجوع للمتجر
-window.goStore = function(){
-  window.location.href = "?";
+/* البحث */
+function searchProduct() {
+    var input = document.getElementById("search").value.toLowerCase();
+    var items = document.getElementsByClassName("product");
+
+    for (var i = 0; i < items.length; i++) {
+        var name = items[i].innerText.toLowerCase();
+
+        if (name.includes(input)) {
+            items[i].style.display = "block";
+        } else {
+            items[i].style.display = "none";
+        }
+    }
 }
 
-// تحديد الصفحة
-if(page === "admin"){
-  showAdmin();
-}else{
-  showStore();
-}
-
-// زر مخفي (5 ضغطات في أي مكان)
+// 🔥 زر مخفي (5 ضغطات)
 let count = 0;
 
 document.body.addEventListener("click", function(){
-  count++;
+    count++;
 
-  if(count >= 5){
-    window.location.href = "?page=admin";
-  }
+    if(count >= 5){
+        document.getElementById("adminPanel").style.display = "block";
+        alert("تم فتح وضع Admin 🔐");
+    }
 
-  setTimeout(()=>{
-    count = 0;
-  }, 2000);
+    setTimeout(()=>{
+        count = 0;
+    }, 2000);
 });
 
-});
+// عرض المنتجات عند فتح الموقع
+showProducts();
+
 </script>
 
 </body>
