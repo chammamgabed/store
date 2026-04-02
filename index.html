@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>My Store</title>
-  <style>
-    body {font-family: Arial; text-align: center; background:#f5f5f5;}
-    .header {background:#222; color:white; padding:15px;}
-    .products {display:flex; flex-wrap:wrap; justify-content:center;}
-    .product {background:white; margin:10px; padding:10px; border-radius:10px; width:200px;}
-    .product img {width:100%;}
-  </style>
+<meta charset="UTF-8">
+<title>My Store</title>
+
+<style>
+body {font-family: Arial; text-align:center; background:#f5f5f5;}
+.header {background:#222; color:white; padding:15px;}
+.products {display:flex; flex-wrap:wrap; justify-content:center;}
+.product {background:white; margin:10px; padding:10px; border-radius:10px; width:200px;}
+.product img {width:100%;}
+input {padding:10px; margin:5px;}
+button {padding:10px; background:green; color:white; border:none;}
+</style>
 </head>
 
 <body>
 
 <div class="header">
-  <h2>🛍️ My Store</h2>
+<h2>🛍️ My Store</h2>
 </div>
 
 <div id="app"></div>
@@ -23,47 +26,90 @@
 <script>
 document.addEventListener("DOMContentLoaded", function(){
 
-  const params = new URLSearchParams(window.location.search);
-  const page = params.get("page");
+const params = new URLSearchParams(window.location.search);
+const page = params.get("page");
 
-  // STORE
-  if(page !== "admin"){
-    document.getElementById("app").innerHTML = `
-      <h2>منتجاتنا</h2>
-      <div class="products">
-        <div class="product">
-          <img src="https://via.placeholder.com/200">
-          <h3>ساعة ذكية</h3>
-          <p>15$</p>
-        </div>
+// تحميل المنتجات من التخزين
+let products = JSON.parse(localStorage.getItem("products")) || [];
+
+// STORE
+function showStore(){
+  let html = "<h2>منتجاتنا</h2><div class='products'>";
+
+  products.forEach(p => {
+    html += `
+      <div class="product">
+        <img src="${p.image}">
+        <h3>${p.name}</h3>
+        <p>${p.price}</p>
+        <a href="${p.link}" target="_blank">
+          <button>شراء</button>
+        </a>
       </div>
     `;
-  }
-
-  // ADMIN
-  if(page === "admin"){
-    document.getElementById("app").innerHTML = `
-      <h2>🔐 Admin Panel</h2>
-      <p>تم الدخول بنجاح ✅</p>
-    `;
-  }
-
-  // 🔥 الضغط في أي مكان 5 مرات
-  let count = 0;
-
-  document.body.addEventListener("click", function(){
-    count++;
-    console.log("click:", count);
-
-    if(count >= 5){
-      window.location.href = "?page=admin";
-    }
-
-    // يرجع للصفر بعد 2 ثواني
-    setTimeout(()=>{
-      count = 0;
-    }, 2000);
   });
+
+  html += "</div>";
+  document.getElementById("app").innerHTML = html;
+}
+
+// ADMIN
+function showAdmin(){
+  document.getElementById("app").innerHTML = `
+    <h2>🔐 Admin Panel</h2>
+
+    <input id="name" placeholder="اسم المنتج"><br>
+    <input id="price" placeholder="السعر"><br>
+    <input id="image" placeholder="رابط الصورة"><br>
+    <input id="link" placeholder="رابط الشراء"><br>
+
+    <button onclick="addProduct()">➕ إضافة منتج</button>
+    <br><br>
+    <button onclick="goStore()">⬅️ الرجوع للمتجر</button>
+  `;
+}
+
+// إضافة منتج
+window.addProduct = function(){
+  const name = document.getElementById("name").value;
+  const price = document.getElementById("price").value;
+  const image = document.getElementById("image").value;
+  const link = document.getElementById("link").value;
+
+  const product = {name, price, image, link};
+
+  products.push(product);
+  localStorage.setItem("products", JSON.stringify(products));
+
+  alert("تمت الإضافة ✅");
+}
+
+// الرجوع للمتجر
+window.goStore = function(){
+  window.location.href = "?";
+}
+
+// عرض الصفحة
+if(page === "admin"){
+  showAdmin();
+}else{
+  showStore();
+}
+
+// 🔥 زر مخفي (5 ضغطات)
+let count = 0;
+
+document.body.addEventListener("click", function(){
+  count++;
+
+  if(count >= 5){
+    window.location.href = "?page=admin";
+  }
+
+  setTimeout(()=>{
+    count = 0;
+  }, 2000);
+});
 
 });
 </script>
