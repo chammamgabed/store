@@ -31,7 +31,7 @@ img {
     width: 150px;
     height: 150px;
     background: #ddd;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 10px;
@@ -63,8 +63,8 @@ a {
 
 button {
     padding: 10px;
-    border: none;
     border-radius: 8px;
+    border: none;
     background: black;
     color: white;
     cursor: pointer;
@@ -95,7 +95,7 @@ button {
 <div id="adminPanel">
 
 <br>
-<input type="file" id="imgInput" accept="image/*"><br><br>
+<input type="text" id="imgInput" placeholder="Image URL"><br><br>
 <input type="text" id="nameInput" placeholder="Product Name"><br><br>
 <input type="text" id="linkInput" placeholder="Product Link"><br><br>
 
@@ -114,24 +114,23 @@ let products = JSON.parse(localStorage.getItem("products")) || [];
 let isAdmin = false;
 let clickCount = 0;
 
-/* عرض */
+/* ===== عرض ===== */
 window.onload = function() {
     displayProducts();
 };
 
-/* زر سري 10 ضغطات */
+/* ===== زر سري ===== */
 function secretClick() {
     clickCount++;
-
     if (clickCount === 10) {
         document.getElementById("loginBox").style.display = "block";
         clickCount = 0;
     }
 }
 
-/* login */
+/* ===== تسجيل دخول ===== */
 function checkPassword() {
-    var input = document.getElementById("passwordInput").value;
+    let input = document.getElementById("passwordInput").value;
 
     if (input === PASSWORD) {
         document.getElementById("loginBox").style.display = "none";
@@ -142,61 +141,82 @@ function checkPassword() {
     }
 }
 
-/* اغلاق login */
 function closeLogin() {
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("passwordInput").value = "";
     clickCount = 0;
 }
 
-/* اغلاق admin */
 function closeAdmin() {
     document.getElementById("adminPanel").style.display = "none";
     isAdmin = false;
 }
 
-/* حفظ */
+/* ===== حفظ ===== */
 function saveProducts() {
     localStorage.setItem("products", JSON.stringify(products));
 }
 
-/* إضافة */
-function addProduct() {
-    var file = document.getElementById("imgInput").files[0];
-    var link = document.getElementById("linkInput").value;
-    var name = document.getElementById("nameInput").value;
+/* ===== كلمات مترجمة ===== */
+function generateKeywords(text) {
+    text = text.toLowerCase();
 
-    if (!file || !link || !name) {
+    let words = text.split(" ");
+    let keywords = [...words];
+
+    let dictionary = {
+        charger: ["chargeur", "شاحن"],
+        phone: ["telephone", "هاتف"],
+        cable: ["cable", "كابل"],
+        fast: ["rapide", "سريع"],
+        adapter: ["adaptateur", "محول"]
+    };
+
+    words.forEach(word => {
+        if (dictionary[word]) {
+            keywords = keywords.concat(dictionary[word]);
+        }
+    });
+
+    return keywords.join(" ");
+}
+
+/* ===== إضافة ===== */
+function addProduct() {
+    let img = document.getElementById("imgInput").value;
+    let link = document.getElementById("linkInput").value;
+    let name = document.getElementById("nameInput").value;
+
+    if (!img || !link || !name) {
         alert("Please fill all fields");
         return;
     }
 
-    var reader = new FileReader();
+    products.push({
+        name: name,
+        link: link,
+        img: img,
+        keywords: generateKeywords(name)
+    });
 
-    reader.onload = function(e) {
-        products.push({
-            name: name,
-            link: link,
-            img: e.target.result
-        });
+    saveProducts();
+    displayProducts();
 
-        saveProducts();
-        displayProducts();
-    };
-
-    reader.readAsDataURL(file);
+    document.getElementById("imgInput").value = "";
+    document.getElementById("nameInput").value = "";
+    document.getElementById("linkInput").value = "";
 }
 
-/* عرض */
+/* ===== عرض ===== */
 function displayProducts() {
-    var container = document.getElementById("products");
+    let container = document.getElementById("products");
     container.innerHTML = "";
 
     products.forEach((product, index) => {
-        var div = document.createElement("div");
+        let div = document.createElement("div");
         div.className = "product";
 
-        let imageHTML = product.img 
+        let imageHTML = product.img
             ? `<img src="${product.img}" onclick="deleteImage(${index})">`
             : `<div class="no-img">No Image</div>`;
 
@@ -211,7 +231,7 @@ function displayProducts() {
     });
 }
 
-/* حذف الصورة (فقط admin) */
+/* ===== حذف صورة ===== */
 function deleteImage(index) {
     if (!isAdmin) return;
 
@@ -222,14 +242,24 @@ function deleteImage(index) {
     }
 }
 
-/* بحث */
-function searchProduct() {
-    var input = document.getElementById("search").value.toLowerCase();
-    var items = document.getElementsByClassName("product");
+/* ===== بحث ===== */
+function normalize(text) {
+    return text.toLowerCase();
+}
 
-    for (var i = 0; i < items.length; i++) {
-        var name = items[i].innerText.toLowerCase();
-        items[i].style.display = name.includes(input) ? "block" : "none";
+function searchProduct() {
+    let input = normalize(document.getElementById("search").value);
+    let items = document.getElementsByClassName("product");
+
+    for (let i = 0; i < items.length; i++) {
+        let name = normalize(products[i].name);
+        let keywords = normalize(products[i].keywords || "");
+
+        if (name.includes(input) || keywords.includes(input)) {
+            items[i].style.display = "block";
+        } else {
+            items[i].style.display = "none";
+        }
     }
 }
 </script>
