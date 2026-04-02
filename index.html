@@ -32,6 +32,7 @@ button {
     background: black;
     color: white;
     margin: 5px;
+    cursor: pointer;
 }
 
 /* المنتج */
@@ -95,8 +96,9 @@ input {
 
 <!-- Login -->
 <div id="loginBox">
-    <h3>Login</h3>
+    <h3>Seller Login</h3>
     <input type="password" id="passwordInput" placeholder="Password">
+    <br><br>
     <button onclick="checkPassword()">Login</button>
 </div>
 
@@ -105,8 +107,9 @@ input {
     <input type="text" id="imgInput" placeholder="Image URL">
     <input type="text" id="nameInput" placeholder="Product Name">
     <input type="text" id="linkInput" placeholder="Product Link">
+    <br><br>
     <button onclick="addProduct()">Add Product</button>
-    <button onclick="closeAdmin()">Close</button>
+    <button onclick="closeAdmin()">❌ Close</button>
 </div>
 
 <div id="products"></div>
@@ -131,6 +134,7 @@ function secretClick() {
 /* تسجيل دخول */
 function checkPassword() {
     let pass = document.getElementById("passwordInput").value;
+
     if (pass === PASSWORD) {
         isAdmin = true;
         document.getElementById("loginBox").style.display = "none";
@@ -153,18 +157,22 @@ function saveProducts() {
 
 /* إضافة */
 function addProduct() {
-    let img = document.getElementById("imgInput").value;
-    let name = document.getElementById("nameInput").value;
-    let link = document.getElementById("linkInput").value;
+    let img = document.getElementById("imgInput").value.trim();
+    let name = document.getElementById("nameInput").value.trim();
+    let link = document.getElementById("linkInput").value.trim();
 
     if (!img || !name || !link) {
         alert("Fill all fields");
         return;
     }
 
-    products.push({img, name, link});
+    products.push({ img, name, link });
     saveProducts();
     displayProducts();
+
+    document.getElementById("imgInput").value = "";
+    document.getElementById("nameInput").value = "";
+    document.getElementById("linkInput").value = "";
 }
 
 /* عرض */
@@ -176,7 +184,7 @@ function displayProducts() {
         container.innerHTML += `
         <div class="product">
             <h3>${p.name}</h3>
-            <img src="${p.img}">
+            <img src="${p.img}" onerror="this.style.display='none'">
             <a href="${p.link}" target="_blank" class="buy-btn">Buy Now</a>
         </div>
         `;
