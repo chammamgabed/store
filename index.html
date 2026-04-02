@@ -9,19 +9,27 @@ body {font-family: Arial; text-align:center;}
 
 #search {padding:10px;width:80%;margin:10px;border-radius:8px;}
 
-.product {margin:20px; padding:10px; border:1px solid #ddd; border-radius:10px;}
+.product {
+    margin:20px;
+    padding:10px;
+    border:1px solid #ddd;
+    border-radius:10px;
+}
 
-img {width:200px; border-radius:10px;}
+img {width:150px; border-radius:10px;}
 
-a {
+button, a {
     display:inline-block;
     margin-top:10px;
     background:red;
     color:white;
     padding:10px 20px;
-    text-decoration:none;
+    border:none;
     border-radius:8px;
+    text-decoration:none;
 }
+
+.delete-btn {background:black;}
 </style>
 </head>
 
@@ -29,53 +37,124 @@ a {
 
 <h2>🛒 My Store</h2>
 
+<!-- ADMIN PANEL -->
+<div id="adminPanel" style="display:none;">
+    <h3>Admin Panel</h3>
+
+    <input type="file" id="imgInput"><br><br>
+    <input type="text" id="nameInput" placeholder="Product name"><br><br>
+    <input type="text" id="linkInput" placeholder="Product link"><br><br>
+
+    <button onclick="addProduct()">Add Product</button>
+</div>
+
+<!-- SEARCH -->
 <input type="text" id="search" placeholder="🔍 Chercher..." onkeyup="searchProduct()">
 
 <div id="products"></div>
 
 <script>
+let db;
 
-var products = [
-{
-name:"Fast Charger 120W",
-img:"https://i.imgur.com/8Km9tLL.jpg",
-link:"https://s.click.aliexpress.com/e/_EvLztJ6"
-},
-{
-name:"Wireless Earbuds",
-img:"https://i.imgur.com/2nCt3Sbl.jpg",
-link:"https://s.click.aliexpress.com/e/_EvLztJ6"
+// فتح قاعدة البيانات
+let request = indexedDB.open("storeDB", 1);
+
+request.onupgradeneeded = function(e){
+    db = e.target.result;
+    db.createObjectStore("products", {keyPath:"id", autoIncrement:true});
+};
+
+request.onsuccess = function(e){
+    db = e.target.result;
+    loadProducts();
+};
+
+// إضافة منتج
+function addProduct(){
+    let file = document.getElementById("imgInput").files[0];
+    let name = document.getElementById("nameInput").value;
+    let link = document.getElementById("linkInput").value;
+
+    if(!file || !name || !link){
+        alert("Complete all fields");
+        return;
+    }
+
+    let reader = new FileReader();
+
+    reader.onload = function(e){
+        let tx = db.transaction("products","readwrite");
+        let store = tx.objectStore("products");
+
+        store.add({
+            name:name,
+            link:link,
+            img:e.target.result
+        });
+
+        loadProducts();
+    };
+
+    reader.readAsDataURL(file);
 }
-];
 
+// عرض المنتجات
 function loadProducts(){
-    var container = document.getElementById("products");
-    container.innerHTML = "";
+    document.getElementById("products").innerHTML = "";
 
-    products.forEach(p=>{
-        container.innerHTML += `
-        <div class="product">
-            <h3>${p.name}</h3>
-            <img src="${p.img}">
-            <br>
-            <a href="${p.link}" target="_blank">🛒 Buy Now</a>
-        </div>
-        `;
-    });
+    let tx = db.transaction("products","readonly");
+    let store = tx.objectStore("products");
+
+    store.openCursor().onsuccess = function(e){
+        let cursor = e.target.result;
+
+        if(cursor){
+            let p = cursor.value;
+
+            let div = document.createElement("div");
+            div.className = "product";
+
+            div.innerHTML = `
+                <h3>${p.name}</h3>
+                <img src="${p.img}">
+                <br>
+                <a href="${p.link}" target="_blank">🛒 Buy Now</a>
+                ${isAdmin ? `<br><button class="delete-btn" onclick="deleteProduct(${cursor.key})">Delete</button>` : ""}
+            `;
+
+            document.getElementById("products").appendChild(div);
+
+            cursor.continue();
+        }
+    };
 }
 
-function searchProduct(){
-    var input = document.getElementById("search").value.toLowerCase();
-    var productsDiv = document.getElementsByClassName("product");
+// حذف منتج
+function deleteProduct(id){
+    let tx = db.transaction("products","readwrite");
+    let store = tx.objectStore("products");
 
-    for (var i=0;i<productsDiv.length;i++){
-        var name = productsDiv[i].innerText.toLowerCase();
-        productsDiv[i].style.display = name.includes(input) ? "block":"none";
+    store.delete(id);
+    loadProducts();
+}
+
+// البحث
+function searchProduct(){
+    let input = document.getElementById("search").value.toLowerCase();
+    let products = document.getElementsByClassName("product");
+
+    for(let i=0;i<products.length;i++){
+        let name = products[i].innerText.toLowerCase();
+        products[i].style.display = name.includes(input) ? "block":"none";
     }
 }
 
-loadProducts();
+// 🔐 كشف admin (مهم)
+let isAdmin = window.location.href.includes("admin");
 
+if(isAdmin){
+    document.getElementById("adminPanel").style.display = "block";
+}
 </script>
 
 </body>
