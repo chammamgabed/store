@@ -6,86 +6,90 @@
 
 <style>
 body {
-    font-family: Arial;
-    text-align: center;
-    background: linear-gradient(135deg, #e0f7fa, #fce4ec);
     margin: 0;
+    font-family: Arial;
+    background: linear-gradient(135deg,#0f2027,#2c5364);
+    color: white;
 }
 
-h1 { margin-top: 20px; }
+h1 {
+    text-align: center;
+    padding: 15px;
+}
 
 #searchBox {
-    padding: 14px;
-    width: 85%;
-    max-width: 400px;
+    width: 90%;
+    margin: 10px auto;
+    display: block;
+    padding: 12px;
     border-radius: 30px;
     border: none;
-    margin: 20px;
 }
 
-#adminPanel {
+#secretBtn {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 120px;
+    opacity: 0;
+}
+
+.panel {
     display: none;
     background: white;
-    padding: 20px;
-    margin: 20px;
+    color: black;
+    margin: 10px;
+    padding: 15px;
     border-radius: 15px;
 }
 
 #products {
     display: grid;
     grid-template-columns: repeat(2,1fr);
-    gap: 10px;
+    gap: 12px;
     padding: 10px;
 }
 
 .product {
-    background: white;
-    padding: 10px;
-    border-radius: 10px;
+    background: #1f3b4d;
+    border-radius: 20px;
+    overflow: hidden;
 }
 
 .product img {
-    width: 40%;
-    height: 50px;
-    object-fit: contain;
-    border-radius: 8px;
-    display: block;
-    margin: auto;
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
+
+.product-info {
+    padding: 10px;
+}
+
+.product-info h4 {
+    height: 45px;
+    overflow-y: auto;
+    font-size: 14px;
 }
 
 .buy {
-    background: red;
-    color: white;
-    padding: 10px;
-    border: none;
     width: 100%;
-    margin-top: 5px;
-    border-radius: 8px;
-}
-
-.add {
-    background: green;
+    background: #00c6ff;
     color: white;
     padding: 10px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
 }
 
 .deleteBtn {
+    width: 100%;
     background: black;
     color: white;
     padding: 10px;
+    border-radius: 10px;
     border: none;
-    border-radius: 8px;
-}
-
-.logout {
-    background: gray;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 </style>
 </head>
@@ -94,28 +98,27 @@ h1 { margin-top: 20px; }
 
 <h1>🛒 Deenify</h1>
 
-<!-- 👀 زر مخفي -->
-<button onclick="toggleAdmin()" style="opacity:0;position:fixed;top:0;left:0;width:120px;height:120px;"></button>
+<input id="searchBox" placeholder="🔍 Search..." onkeyup="searchProducts()">
 
-<input id="searchBox" placeholder="Chercher / Search..." onkeyup="searchLocal()">
+<button id="secretBtn" onclick="openAdmin()"></button>
 
-<div id="adminPanel">
-    <h3>Add Product</h3>
+<!-- LOGIN -->
+<div id="loginPanel" class="panel">
+<h3>Admin Login</h3>
+<input id="email" placeholder="Email"><br>
+<input id="password" type="password" placeholder="Password"><br>
+<button onclick="login()">Login</button>
+</div>
 
-    <input id="name" placeholder="Product name"><br><br>
-    <input id="image" placeholder="Image URL"><br><br>
-    <input id="link" placeholder="Buy link"><br><br>
-
-    <button class="add" onclick="addProduct()">Add</button>
-
-    <hr>
-
-    <h3>Delete Product</h3>
-    <input id="deleteId" placeholder="Product ID"><br><br>
-    <button class="deleteBtn" onclick="deleteProduct()">Delete</button>
-
-    <br><br>
-    <button class="logout" onclick="logout()">Logout</button>
+<!-- ADMIN -->
+<div id="adminPanel" class="panel">
+<h3>Add Product</h3>
+<input id="name" placeholder="Name"><br>
+<input id="image" placeholder="Image URL"><br>
+<input id="link" placeholder="Link"><br>
+<button onclick="addProduct()">Add</button>
+<br><br>
+<button onclick="logout()">Logout</button>
 </div>
 
 <div id="products"></div>
@@ -128,153 +131,153 @@ const client = supabase.createClient(
 "sb_publishable_F53GV8lPIEHfYb8hPT17SA_wH-7-t2r"
 );
 
-let allProducts = [];
+let tap = 0;
 let isAdmin = false;
-let tapCount = 0;
+let allProducts = [];
 
-// 👀 15 ضغطة
-function toggleAdmin(){
-    tapCount++;
-    if(tapCount >= 15){
-        tapCount = 0;
-        showLogin();
+// منتجات فورية
+const fastProducts = [
+{ name:"🔥 Hot Product", image:"https://i.imgur.com/8Km9tLL.jpg", link:"#"},
+{ name:"⭐ Best Seller", image:"https://i.imgur.com/QlRphfQ.jpg", link:"#"}
+];
+
+// فتح/غلق admin
+function openAdmin(){
+    tap++;
+    if(tap >= 5){
+        tap = 0;
+
+        let login = document.getElementById("loginPanel");
+        let admin = document.getElementById("adminPanel");
+
+        if(login.style.display === "block" || admin.style.display === "block"){
+            login.style.display = "none";
+            admin.style.display = "none";
+        }else{
+            login.style.display = "block";
+        }
+
+        loadProducts(); // تحديث
     }
 }
 
-// 🔐 login
-function showLogin(){
-    let email = prompt("Enter email:");
-    let password = prompt("Enter password:");
-    login(email, password);
-}
+// login
+async function login(){
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
 
-async function login(email, password){
+    if(!email || !password) return;
+
     const { error } = await client.auth.signInWithPassword({ email, password });
 
     if(error){
-        alert("Wrong login ❌");
+        alert("Login error");
         return;
     }
 
     isAdmin = true;
+
+    document.getElementById("loginPanel").style.display = "none";
     document.getElementById("adminPanel").style.display = "block";
+
     loadProducts();
 }
 
-// 🔒 logout
+// logout
 async function logout(){
     await client.auth.signOut();
     isAdmin = false;
     document.getElementById("adminPanel").style.display = "none";
+    loadProducts();
 }
 
-// 📦 load
-async function loadProducts(){
-    const { data } = await client.from("products").select("*");
-    allProducts = data || [];
-    displayProducts(allProducts);
-}
-
-// 🖼 display
+// عرض
 function displayProducts(products){
     let html = "";
+
+    let adminVisible = document.getElementById("adminPanel").style.display === "block";
 
     products.forEach(p=>{
         html += `
         <div class="product">
-            <h4>${p.name}</h4>
-            <img src="${p.image}">
-            <button class="buy" onclick="window.open('${p.link}')">Buy Now</button>
+            <img src="${p.image}" loading="lazy">
+
+            <div class="product-info">
+                <h4>${p.name}</h4>
+
+                <button class="buy" onclick="
+                    let link='${p.link}';
+                    if(!link.startsWith('http')) link='https://' + link;
+                    window.open(link)
+                ">Buy</button>
+
+                ${(isAdmin && adminVisible) 
+                ? `<button class="deleteBtn" onclick="deleteProduct('${p.id}')">Delete</button>` 
+                : ""}
+            </div>
         </div>`;
     });
 
     document.getElementById("products").innerHTML = html;
 }
 
-// ➕ add
+// تحميل فوري
+function instantLoad(){
+    displayProducts(fastProducts);
+}
+
+// تحميل
+async function loadProducts(){
+
+    let cached = localStorage.getItem("products");
+
+    if(cached){
+        allProducts = JSON.parse(cached);
+        displayProducts(allProducts);
+    }
+
+    const { data } = await client.from("products").select("*");
+
+    if(data){
+        allProducts = data;
+        displayProducts(allProducts);
+
+        localStorage.setItem("products", JSON.stringify(data));
+    }
+}
+
+// إضافة
 async function addProduct(){
+    if(!isAdmin) return;
+
     let name = document.getElementById("name").value;
     let image = document.getElementById("image").value;
     let link = document.getElementById("link").value;
 
-    if(!name || !image || !link){
-        alert("Fill all fields");
-        return;
-    }
-
     await client.from("products").insert([{name, image, link}]);
 
-    document.getElementById("name").value = "";
-    document.getElementById("image").value = "";
-    document.getElementById("link").value = "";
-
     loadProducts();
 }
 
-// ❌ delete
-async function deleteProduct(){
-    let id = document.getElementById("deleteId").value;
-
-    if(!id){
-        alert("Enter ID");
-        return;
-    }
-
+// حذف
+async function deleteProduct(id){
     await client.from("products").delete().eq("id", id);
-
-    document.getElementById("deleteId").value = "";
     loadProducts();
 }
 
-// 🔥 normalize
-function normalize(text){
-    return text
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[أإآ]/g, "ا")
-        .replace(/ة/g, "ه")
-        .replace(/ى/g, "ي")
-        .trim();
-}
+// بحث
+function searchProducts(){
+    let value = document.getElementById("searchBox").value.toLowerCase();
 
-// 🌍 dictionary
-const dictionary = {
-    charger: ["chargeur", "شاحن"],
-    phone: ["telephone", "téléphone", "هاتف"],
-    laptop: ["ordinateur", "حاسوب"],
-    watch: ["montre", "ساعة"],
-    headphones: ["ecouteurs", "écouteurs", "سماعات"],
-    camera: ["camera", "كاميرا"],
-    tablet: ["tablette", "تابلت"],
-};
-
-// 🔍 search
-function searchLocal(){
-    let value = normalize(document.getElementById("searchBox").value);
-
-    let filtered = allProducts.filter(p => {
-        let name = normalize(p.name);
-
-        if(name.includes(value)) return true;
-
-        for(let key in dictionary){
-            let words = [key, ...dictionary[key]];
-
-            if(words.includes(value)){
-                if(words.some(w => name.includes(normalize(w)))){
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    });
+    let filtered = allProducts.filter(p =>
+        p.name.toLowerCase().includes(value)
+    );
 
     displayProducts(filtered);
 }
 
 // تشغيل
+instantLoad();
 loadProducts();
 </script>
 
